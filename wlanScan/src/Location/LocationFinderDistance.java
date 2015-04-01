@@ -74,7 +74,6 @@ public class LocationFinderDistance implements LocationFinder{
             if (knownLocations.get(data[i].getMacAsString()) == null) {
                 continue;
             }
-            count--;
             int[] array = new int[6];
             Position pos = knownLocations.get(data[i].getMacAsString());
             array[0] = (int)pos.getX();
@@ -83,6 +82,7 @@ public class LocationFinderDistance implements LocationFinder{
             array[3] = count <= 0 ? 255 : 0;
             array[4] = count > 0 ? 255 : 0;
             array[5] = 0;
+            count--;
             dataSet.add(array);
         }
         view.updatePoints(dataSet);
@@ -96,7 +96,7 @@ public class LocationFinderDistance implements LocationFinder{
         double dst = 0;
         int count = 3;
 		for(int i=0; i<data.length; i++){
-			if(count > 0 && knownLocations.containsKey(data[i].getMacAsString())){
+			if(count > 0 && knownLocations.get(data[i].getMacAsString()) != null){
 				ret = processData(data[i]);
                 count--;
 			}
@@ -116,7 +116,7 @@ public class LocationFinderDistance implements LocationFinder{
 	private void printMacs(MacRssiPair[] data) {
 		for (MacRssiPair pair : data) {
 			if (knownLocations.containsKey(pair.getMacAsString())) {
-                System.out.println(pair + " loc: " + knownLocations.get(pair.getMacAsString()));
+                System.out.println(pair + " loc: " + knownLocations.get(pair.getMacAsString()) + " dst: " + calculateDistance(pair.getRssi()));
             }
 		}
 	}
