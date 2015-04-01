@@ -1,5 +1,4 @@
 package Location;
-
 import Utils.MacRssiPair;
 import Utils.Position;
 import Utils.Utils;
@@ -18,7 +17,7 @@ public class LocationFinderDistance implements LocationFinder{
 	private HashMap<String, Position> knownLocations; //Contains the known locations of APs. The long is a MAC address.
     private short[][] scoreMap;
     private Position bestPos;
-
+    private GUI.Viewer view;
     public class PairComparator implements Comparator<MacRssiPair> {
 
         @Override
@@ -27,8 +26,9 @@ public class LocationFinderDistance implements LocationFinder{
         }
     }
 
-    public LocationFinderDistance(){
+    public LocationFinderDistance(GUI.Viewer p){
         scoreMap = new short[200][200];
+        view = p;
 		knownLocations = Utils.getKnownLocations(); //Put the known locations in our hashMap
 	}
 
@@ -69,9 +69,9 @@ public class LocationFinderDistance implements LocationFinder{
     }
 
     private void drawWifiSpots(MacRssiPair[] data, int count) {
-        HashSet<Integer[]> dataSet = new HashSet<Integer[]>();
+        HashSet<int[]> dataSet = new HashSet<int[]>();
         for(int i=0; i<data.length; i++){
-            Integer[] array = new Integer[6];
+            int[] array = new int[6];
             Position pos = knownLocations.get(data[i].getMacAsString());
             array[0] = (int)pos.getX();
             array[1] = (int)pos.getY();
@@ -81,12 +81,13 @@ public class LocationFinderDistance implements LocationFinder{
             array[5] = 0;
             dataSet.add(array);
         }
-        //main.WlanScanner.GUI
+        view.updatePoints(dataSet);
     }
 
 	private Position getBestKnownFromList(MacRssiPair[] data){
         scoreMap = new short[1000][1000];
         Arrays.sort(data, new PairComparator());
+        drawWifiSpots(data, 3);
 		Position ret = new Position(0, 0);
         double dst = 0;
         int count = 3;

@@ -1,4 +1,3 @@
-package main;
 
 import java.util.concurrent.LinkedBlockingQueue;
 
@@ -29,9 +28,10 @@ public class WlanScanner {
 	
 	//Controls if the position is send to the server for viewing on the website.
 	public static boolean sendToWebsite = true;
-	
+
+
 	//The LocationFinder that is to be used. Replace this with your own implementation!
-	public LocationFinder locationHandler = new LocationFinderDistance();
+	public LocationFinder locationHandler;
 	
 	///////////// Do not edit below this line! ////////////////
 	
@@ -52,8 +52,9 @@ public class WlanScanner {
 		data = new LinkedBlockingQueue<MacRssiPair[]>(); // Queue between communicator thread and this thread
 		pos = new LinkedBlockingQueue<Position>(); // Queue between this thread and the viewer thread
 		sendPos = new LinkedBlockingQueue<Position>(); // Queue between this thread and the WebSender thread
-		Viewer GUI = new Viewer(pos);
+
 		Thread viewer = new Thread(GUI);
+        locationHandler = new LocationFinderDistance(GUI);
 		viewer.start();
 		
 		if(sendToWebsite){
