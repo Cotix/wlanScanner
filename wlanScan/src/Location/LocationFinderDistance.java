@@ -42,8 +42,8 @@ public class LocationFinderDistance implements LocationFinder{
         double exp = (27.55 - (20 * Math.log10(2400)) + Math.abs(signalLevel)) / 20.0;
         double c = Math.pow(10.0, exp);
         c *= c;
-        c /= 2.5 * 2.5;
-        return Math.sqrt(c);
+        c /= 3 * 3;
+        return Math.sqrt(c)*1.5;
     }
 
     private Position processData(MacRssiPair pair) {
@@ -89,7 +89,7 @@ public class LocationFinderDistance implements LocationFinder{
         Arrays.sort(data, new PairComparator());
 		Position ret = new Position(0, 0);
         double dst = 0;
-        int count = 30;
+        int count = 3;
 		for(int i=0; i<data.length; i++){
 			if(count > 0 && knownLocations.containsKey(data[i].getMacAsString())){
 				ret = processData(data[i]);
