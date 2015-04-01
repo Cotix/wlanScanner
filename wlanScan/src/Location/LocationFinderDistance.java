@@ -52,7 +52,7 @@ public class LocationFinderDistance implements LocationFinder{
                 Position pos = knownLocations.get(pair.getMacAsString());
                 int x = (int)Math.round(pos.getX() + dx);
                 int y = (int)Math.round(pos.getY() + dy);
-                if (calculateDistance(pair.getRssi()) - Math.sqrt(dx*dx + dy*dy) > 0) {
+                if (calculateDistance(pair.getRssi())*4 - Math.sqrt(dx*dx + dy*dy) > 0) {
                     scoreMap[x][y]++;
                 }
                 if (bestPos == null || scoreMap[x][y] > scoreMap[(int)bestPos.getX()][(int)bestPos.getY()]) {

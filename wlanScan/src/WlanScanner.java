@@ -11,6 +11,8 @@ import Utils.*;
  *
  */
 public class WlanScanner {
+    public static Viewer GUI;
+
 	//The port the Wlan scanner server is running on. (Default = 2548)
 	public static int port = 2548;
 	
@@ -48,8 +50,8 @@ public class WlanScanner {
 		data = new LinkedBlockingQueue<MacRssiPair[]>(); // Queue between communicator thread and this thread
 		pos = new LinkedBlockingQueue<Position>(); // Queue between this thread and the viewer thread
 		sendPos = new LinkedBlockingQueue<Position>(); // Queue between this thread and the WebSender thread
-		
-		Thread viewer = new Thread(new Viewer(pos));
+		Viewer GUI = new Viewer(pos);
+		Thread viewer = new Thread(GUI);
 		viewer.start();
 		
 		if(sendToWebsite){
