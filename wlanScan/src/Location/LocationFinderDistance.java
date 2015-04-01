@@ -15,8 +15,10 @@ import java.util.HashSet;
  */
 public class LocationFinderDistance implements LocationFinder{
 	private HashMap<String, Position> knownLocations; //Contains the known locations of APs. The long is a MAC address.
-    private short[][] scoreMap;
-    private Position bestPos;
+    private HashMap<String, Integer> routerMap;
+    private Position myDeltaPos;
+    private Position dDeltaPos;
+    private String atRouter;
     private GUI.Viewer view;
     public class PairComparator implements Comparator<MacRssiPair> {
 
@@ -27,7 +29,9 @@ public class LocationFinderDistance implements LocationFinder{
     }
 
     public LocationFinderDistance(GUI.Viewer p){
-        scoreMap = new short[200][200];
+        routerMap = new HashMap<>();
+        atRouter = "";
+        myDeltaPos = new Position(0,0);
         view = p;
 		knownLocations = Utils.getKnownLocations(); //Put the known locations in our hashMap
 	}
@@ -46,26 +50,37 @@ public class LocationFinderDistance implements LocationFinder{
         return Math.sqrt(c)*1.5;
     }
 
-    private Position processData(MacRssiPair pair) {
-        int dst = (int)Math.ceil(calculateDistance(pair.getRssi()));
-        for (int dx = -dst; dx != dst; ++dx) {
-            for (int dy = -dst; dy != dst; ++dy) {
-                Position pos = knownLocations.get(pair.getMacAsString());
-                int x = (int)Math.round(pos.getX() + dx);
-                int y = (int)Math.round(pos.getY() + dy);
-                if (x < 0 || y < 0 || x >= 1000 || y >= 1000) {
-                    continue;
-                }
-                if (dst - Math.sqrt(dx*dx + dy*dy) > 0) {
-                    scoreMap[x][y]++;
-                }
-                if (bestPos == null || scoreMap[x][y] > scoreMap[(int)bestPos.getX()][(int)bestPos.getY()]) {
-                    bestPos = new Position(x, y);
+    private void processData(MacRssiPair pair) {
+        String router = pair.getMacAsString();
+        if (knownLocations.get(router) != null) {
+            Position pos = knownLocations.get(router);
+            if (routerMap.containsKey(router)) {
+                int diff = Math.abs(routerMap.get(router) - pair.getRssi());
+
+                System.out.println("diff: " + diff);
+                if (diff <= 5) {
+                    double diffDistance = Math.pow(10.0, diff/10.0);
+                    System.out.println("diffDistance: " + diffDistance);
+                    Position myPos = knownLocations.get(atRouter);
+                    myPos = new Position(myPos.getX() + myDeltaPos.getX(), myPos.getY() + myDeltaPos.getY());
+                    double x = (myPos.getX() - pos.getX());
+                    double y = (myPos.getY() - pos.getY());
+                    System.out.println("x,y: " + x + " " + y);
+                    double oldX = x;
+                    double oldY = y;
+                    if (routerMap.get(router) < pair.getRssi()) {
+                        x /= diffDistance;
+                        y /= diffDistance;
+                    } else {
+                        x *= diffDistance;
+                        y *= diffDistance;
+                    }
+                    System.out.println("x-oldx y-oldy: " + (x-oldX) + " " + (y-oldY));
+                    dDeltaPos = new Position(dDeltaPos.getX() + (x-oldX), dDeltaPos.getY() + (y-oldY) );
                 }
             }
+            routerMap.put(router, pair.getRssi());
         }
-        System.out.println(scoreMap[(int)bestPos.getX()][(int)bestPos.getY()]);
-        return bestPos;
     }
 
     private void drawWifiSpots(MacRssiPair[] data, int count) {
@@ -74,6 +89,7 @@ public class LocationFinderDistance implements LocationFinder{
             if (knownLocations.get(data[i].getMacAsString()) == null) {
                 continue;
             }
+
             int[] array = new int[6];
             Position pos = knownLocations.get(data[i].getMacAsString());
             array[0] = (int)pos.getX();
@@ -89,23 +105,32 @@ public class LocationFinderDistance implements LocationFinder{
     }
 
 	private Position getBestKnownFromList(MacRssiPair[] data){
-        scoreMap = new short[1000][1000];
         Arrays.sort(data, new PairComparator());
-        drawWifiSpots(data, 3);
-		Position ret = new Position(0, 0);
+        drawWifiSpots(data, 1);
+        dDeltaPos = new Position(0, 0);
         double dst = 0;
-        int count = 3;
 		for(int i=0; i<data.length; i++){
-			if(count > 0 && knownLocations.get(data[i].getMacAsString()) != null){
-				ret = processData(data[i]);
-                count--;
-			}
-            if(data[i].getMacAsString().equals("00:26:CB:42:8B:20")) {
-                dst = calculateDistance(data[i].getRssi());
+            if (knownLocations.get(data[i].getMacAsString()) == null) {
+                continue;
             }
+            if (atRouter.equals("")) {
+                System.out.println("Setting first atRouter");
+                atRouter = data[i].getMacAsString();
+                routerMap.put(atRouter, data[i].getRssi());
+            }
+            if (data[i].getRssi() > routerMap.get(atRouter)) {
+                Position myPos = knownLocations.get(atRouter);
+                myPos = new Position(myPos.getX() + myDeltaPos.getX(), myPos.getY() + myDeltaPos.getY());
+                Position newPos = knownLocations.get(data[i].getMacAsString());
+                myDeltaPos = new Position(myPos.getX() - newPos.getX(), myPos.getY() - newPos.getY());
+                atRouter = data[i].getMacAsString();
+            }
+            processData(data[i]);
+            myDeltaPos = new Position(myDeltaPos.getX() + dDeltaPos.getX(), myDeltaPos.getY() + dDeltaPos.getY());
 		}
-        System.out.println("Distance to 00:26:CB:42:8B:20: " + dst);
-		return ret;
+        Position myPos = knownLocations.get(atRouter);
+        myPos = new Position(myPos.getX() + myDeltaPos.getX(), myPos.getY() + myDeltaPos.getY());
+		return myPos;
 	}
 	
 	/**
