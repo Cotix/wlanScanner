@@ -7,6 +7,7 @@ import Utils.Utils;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 
 /**
  * Simple Location finder that returns the first known APs location from the list of received MAC addresses
@@ -42,7 +43,7 @@ public class LocationFinderDistance implements LocationFinder{
         double c = Math.pow(10.0, exp);
         c *= c;
         c /= 2.5 * 2.5;
-        return Math.sqrt(c);
+        return Math.sqrt(c)*2;
     }
 
     private Position processData(MacRssiPair pair) {
@@ -52,7 +53,7 @@ public class LocationFinderDistance implements LocationFinder{
                 Position pos = knownLocations.get(pair.getMacAsString());
                 int x = (int)Math.round(pos.getX() + dx);
                 int y = (int)Math.round(pos.getY() + dy);
-                if (calculateDistance(pair.getRssi())*4 - Math.sqrt(dx*dx + dy*dy) > 0) {
+                if (Math.ceil(calculateDistance(pair.getRssi())) - Math.sqrt(dx*dx + dy*dy) > 0) {
                     scoreMap[x][y]++;
                 }
                 if (bestPos == null || scoreMap[x][y] > scoreMap[(int)bestPos.getX()][(int)bestPos.getY()]) {
@@ -62,6 +63,22 @@ public class LocationFinderDistance implements LocationFinder{
         }
         System.out.println(scoreMap[(int)bestPos.getX()][(int)bestPos.getY()]);
         return bestPos;
+    }
+
+    private void drawWifiSpots(MacRssiPair[] data, int count) {
+        HashSet<Integer[]> dataSet = new HashSet<Integer[]>();
+        for(int i=0; i<data.length; i++){
+            Integer[] array = new Integer[6];
+            Position pos = knownLocations.get(data[i].getMacAsString());
+            array[0] = (int)pos.getX();
+            array[1] = (int)pos.getY();
+            array[2] = (int)Math.ceil(calculateDistance(data[i].getRssi()));
+            array[3] = count <= 0 ? 255 : 0;
+            array[4] = count > 0 ? 255 : 0;
+            array[5] = 0;
+            dataSet.add(array);
+        }
+        //main.WlanScanner.GUI
     }
 
 	private Position getBestKnownFromList(MacRssiPair[] data){
