@@ -43,7 +43,7 @@ public class LocationFinderDistance implements LocationFinder{
         double c = Math.pow(10.0, exp);
         c *= c;
         c /= 2.5 * 2.5;
-        return Math.sqrt(c)*2;
+        return Math.sqrt(c);
     }
 
     private Position processData(MacRssiPair pair) {
