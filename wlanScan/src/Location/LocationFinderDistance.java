@@ -18,7 +18,6 @@ public class LocationFinderDistance implements LocationFinder{
 
     public LocationFinderDistance(){
         scoreMap = new short[1000][1000];
-        bestPos = new Position();
 		knownLocations = Utils.getKnownLocations(); //Put the known locations in our hashMap
 	}
 
@@ -32,25 +31,31 @@ public class LocationFinderDistance implements LocationFinder{
         double exp = (27.55 - (20 * Math.log10(2400)) + Math.abs(signalLevel)) / 20.0;
         double c = Math.pow(10.0, exp);
         c *= c;
-        c /= 2.5 * 2.5;
+        c /= 3 * 3;
         return Math.sqrt(c);
     }
 
     private Position processData(MacRssiPair pair) {
         for (int dx = 0; dx != 20; ++dx) {
             for (int dy = 0; dy != 20; ++dy) {
-                scoreMap[]
+                Position pos = knownLocations.get(pair.getMacAsString());
+                int x = (int)Math.round(pos.getX() + dx);
+                int y = (int)Math.round(pos.getY() + dy);
+                scoreMap[x][y] += (200 + pair.getRssi())  - (Math.abs(Math.sqrt(dx*dx + dy+dy) - calculateDistance(pair.getRssi())*2));
+                if (bestPos == null || scoreMap[x][y] > scoreMap[(int)bestPos.getX()][(int)bestPos.getY()]) {
+                    bestPos = new Position(x, y);
+                }
             }
         }
+        return bestPos;
     }
 
 	private Position getBestKnownFromList(MacRssiPair[] data){
-		Position ret = new Position(0,0);
+		Position ret = new Position(0, 0);
         double dst = 0;
 		for(int i=0; i<data.length; i++){
-			if(knownLocations.containsKey(data[i].getMacAsString()) && data[i].getRssi() > best){
-				ret = knownLocations.get(data[i].getMacAsString());
-
+			if(knownLocations.containsKey(data[i].getMacAsString())){
+				ret = processData(data[i]);
 			}
             if(data[i].getMacAsString().equals("00:26:CB:42:8B:20")) {
                 dst = calculateDistance(data[i].getRssi());
