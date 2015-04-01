@@ -56,9 +56,8 @@ public class LocationFinderDistance implements LocationFinder{
             Position pos = knownLocations.get(router);
             if (routerMap.containsKey(router)) {
                 int diff = Math.abs(routerMap.get(router) - pair.getRssi());
-
                 System.out.println("diff: " + diff);
-                if (diff <= 5) {
+                if (diff <= 5 && pair.getRssi() >= -50) {
                     double diffDistance = Math.pow(10.0, diff/10.0);
                     System.out.println("diffDistance: " + diffDistance);
                     Position myPos = knownLocations.get(atRouter);
@@ -126,8 +125,8 @@ public class LocationFinderDistance implements LocationFinder{
                 atRouter = data[i].getMacAsString();
             }
             processData(data[i]);
-            myDeltaPos = new Position(myDeltaPos.getX() + dDeltaPos.getX(), myDeltaPos.getY() + dDeltaPos.getY());
 		}
+        myDeltaPos = new Position(myDeltaPos.getX() + dDeltaPos.getX(), myDeltaPos.getY() + dDeltaPos.getY());
         Position myPos = knownLocations.get(atRouter);
         myPos = new Position(myPos.getX() + myDeltaPos.getX(), myPos.getY() + myDeltaPos.getY());
 		return myPos;
@@ -141,7 +140,7 @@ public class LocationFinderDistance implements LocationFinder{
 	private void printMacs(MacRssiPair[] data) {
 		for (MacRssiPair pair : data) {
 			if (knownLocations.containsKey(pair.getMacAsString())) {
-                System.out.println(pair + " loc: " + knownLocations.get(pair.getMacAsString()) + " dst: " + calculateDistance(pair.getRssi()));
+                //System.out.println(pair + " loc: " + knownLocations.get(pair.getMacAsString()) + " dst: " + calculateDistance(pair.getRssi()));
             }
 		}
 	}
