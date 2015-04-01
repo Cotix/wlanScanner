@@ -52,7 +52,7 @@ public class WlanScanner {
 		data = new LinkedBlockingQueue<MacRssiPair[]>(); // Queue between communicator thread and this thread
 		pos = new LinkedBlockingQueue<Position>(); // Queue between this thread and the viewer thread
 		sendPos = new LinkedBlockingQueue<Position>(); // Queue between this thread and the WebSender thread
-
+        GUI = new GUI.Viewer(pos);
 		Thread viewer = new Thread(GUI);
         locationHandler = new LocationFinderDistance(GUI);
 		viewer.start();
