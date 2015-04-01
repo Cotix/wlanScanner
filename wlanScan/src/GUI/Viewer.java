@@ -64,6 +64,7 @@ public class Viewer implements Runnable {
 				for (int[] p : points) {
 					Position ppos = getMapPosition(new Position(p[0], p[1]));
 					int radius = (p[2] * 10);
+					draw.setColor(new Color(p[3], p[4], p[5]));
 					draw.drawOval((int) (ppos.getX()-radius/2)-5, (int) (ppos.getY()-radius/2)-5, radius, radius);
 				}
 
