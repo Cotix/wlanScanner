@@ -71,7 +71,7 @@ public class LocationFinderDistance implements LocationFinder{
     private void drawWifiSpots(MacRssiPair[] data, int count) {
         HashSet<int[]> dataSet = new HashSet<int[]>();
         for(int i=0; i<data.length; i++){
-            if (knownLocations.containsKey(data[i].getMacAsString())) {
+            if (knownLocations.get(data[i].getMacAsString()) == null) {
                 continue;
             }
             count--;
