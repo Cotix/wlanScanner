@@ -61,12 +61,14 @@ public class Viewer implements Runnable {
 				draw.drawImage(backup, 0, 0, null);
 				draw.drawImage(point, (int)currentPos.getX()-5, (int)currentPos.getY()-5, null);
 
-				for (int[] p : points) {
-					Position ppos = getMapPosition(new Position(p[0], p[1]));
-					int radius = (p[2] * 10);
-					draw.setColor(new Color(p[3], p[4], p[5]));
-					draw.drawOval((int) (ppos.getX()-radius/2)-5, (int) (ppos.getY()-radius/2)-5, radius, radius);
-				}
+                for (int[] p : points) {
+                    Position ppos = getMapPosition(new Position(p[0], p[1]));
+                    int radius = (p[2] * 10);
+                    draw.setColor(new Color(p[3], p[4], p[5]));
+                    draw.drawOval((int) (ppos.getX() - radius / 2) - 5, (int) (ppos.getY() - radius / 2) - 5, radius, radius);
+                    draw.setColor(new Color(p[3], p[4], p[5], 120));
+                    draw.fillOval((int) (ppos.getX() - radius / 2) - 5, (int) (ppos.getY() - radius / 2) - 5, radius, radius);
+                }
 
 				label.repaint();
 			}
